@@ -242,7 +242,7 @@ export const gameData = {
                     x: 70, y: 10, w: 20, h: 80,
                     onClick: (gm) => {
                         gm.playSound('sfx-dynamic', 'scene/room_c/c_3a_sfx_ladder_zoom.mp3');
-                        gm.loadScene('c_4a_climbing');
+                        gm.loadScene('c_3a_ladder_zoom');
                     }
                 }
             ]
@@ -250,7 +250,7 @@ export const gameData = {
         'c_4a_climbing': {
             bg: 'scene/room_c/c_4a_climbing.png',
             canGoBack: true,
-            backTarget: 'c_bg_dark',
+            backTarget: (state) => state.flags.powerOn ? 'c_bg_light' : 'c_bg_dark',
             hitboxes: [
                 {
                     x: 30, y: 10, w: 40, h: 60,
@@ -264,7 +264,7 @@ export const gameData = {
         'c_4b_door_open': {
             bg: 'scene/room_c/c_4b_door_open.png',
             canGoBack: true,
-            backTarget: 'c_4a_climbing',
+            backTarget: (state) => state.flags.powerOn ? 'c_bg_light' : 'c_bg_dark',
             hitboxes: [
                 {
                     x: 20, y: 20, w: 60, h: 50,
@@ -293,6 +293,39 @@ export const gameData = {
                     x: 50, y: 40, w: 40, h: 30, // 싱크대
                     onClick: (gm) => {
                         gm.loadScene('c_2_sink');
+                    }
+                },
+                {
+                    x: 70, y: 10, w: 20, h: 80, // 사다리
+                    onClick: (gm) => {
+                        gm.playSound('sfx-dynamic', 'scene/room_c/c_3a_sfx_ladder_zoom.mp3');
+                        gm.loadScene('c_3a_ladder_zoom');
+                    }
+                }
+            ]
+        },
+        'c_3a_ladder_zoom': {
+            bg: 'scene/room_c/c_3a_ladder_zoom.png',
+            canGoBack: true,
+            backTarget: (state) => state.flags.powerOn ? 'c_bg_light' : 'c_bg_dark',
+            hitboxes: [
+                {
+                    x: 0, y: 0, w: 100, h: 100,
+                    onClick: (gm) => {
+                        gm.loadScene('c_3b_ladder_up');
+                    }
+                }
+            ]
+        },
+        'c_3b_ladder_up': {
+            bg: 'scene/room_c/c_3b_ladder_up.png',
+            canGoBack: true,
+            backTarget: (state) => state.flags.powerOn ? 'c_bg_light' : 'c_bg_dark',
+            hitboxes: [
+                {
+                    x: 0, y: 0, w: 100, h: 100,
+                    onClick: (gm) => {
+                        gm.loadScene('c_4a_climbing');
                     }
                 }
             ]
@@ -345,16 +378,8 @@ export const gameData = {
             onEnter: (gm) => {
                 if (gm.state.flags.water_cup_obtained) {
                     if (gm.state.flags.sunheat_ready && !gm.state.flags.hot_water_obtained) {
-                        gm.showDialog(["이제 뜨거운 물이 나온다!"], () => {
-                            gm.playSound('sfx-dynamic', 'scene/room_c/c_2a_sfx_hot_water_on.wav');
-                            gm.state.flags.hot_water_obtained = true;
-                            // Change item_05_water_cup to item_08_hot_water_cup
-                            const idx = gm.state.inventory.indexOf('item_05_water_cup');
-                            if (idx !== -1) {
-                                gm.state.inventory.splice(idx, 1);
-                                gm.obtainItem('item_08_hot_water_cup');
-                            }
-                        });
+                        gm.playSound('sfx-dynamic', 'scene/room_c/c_2a_sfx_hot_water_on.wav');
+                        gm.loadScene('c_2a_hot_water_on');
                     } else if (!gm.state.flags.hot_water_obtained) {
                         if (gm.state.flags.fridge_checked) {
                             gm.showDialog([
@@ -391,6 +416,61 @@ export const gameData = {
                     }
                 });
             }
+        },
+        'c_2a_hot_water_on': {
+            bg: 'scene/room_c/c_2a_hot_water_on.png',
+            canGoBack: true,
+            backTarget: 'c_bg_light',
+            onEnter: (gm) => {
+                gm.showDialog(["이제 뜨거운 물이 나온다!"]);
+            },
+            hitboxes: [
+                {
+                    x: 0, y: 0, w: 100, h: 100,
+                    onClick: (gm) => {
+                        gm.state.flags.hot_water_obtained = true;
+                        const idx = gm.state.inventory.indexOf('item_05_water_cup');
+                        if (idx !== -1) gm.state.inventory.splice(idx, 1);
+                        gm.obtainItem('item_08_hot_water_cup');
+                        gm.loadScene('c_2b_cup_zoom');
+                    }
+                }
+            ]
+        },
+        'c_2b_cup_zoom': {
+            bg: 'scene/room_c/c_2b_cup_zoom.png',
+            canGoBack: true,
+            backTarget: 'c_bg_light',
+            onEnter: (gm) => {
+                gm.showDialog(["이제 차키를 녹이러 가볼까?"]);
+            }
+        },
+        'c_1c_melting': {
+            bg: 'scene/room_c/c_1c_melting.png',
+            canGoBack: true,
+            backTarget: 'c_bg_light',
+            hitboxes: [
+                {
+                    x: 0, y: 0, w: 100, h: 100,
+                    onClick: (gm) => {
+                        gm.loadScene('c_1d_hot_water_pour');
+                    }
+                }
+            ]
+        },
+        'c_1d_hot_water_pour': {
+            bg: 'scene/room_c/c_1d_hot_water_pour.png',
+            canGoBack: true,
+            backTarget: 'c_bg_light',
+            hitboxes: [
+                {
+                    x: 0, y: 0, w: 100, h: 100,
+                    onClick: (gm) => {
+                        gm.state.flags.car_key_obtained = true;
+                        gm.obtainItem('item_09_car_key');
+                    }
+                }
+            ]
         },
         'd_bg_dark': {
             bg: 'scene/room_d/d_bg_dark.png',
@@ -525,7 +605,7 @@ export const gameData = {
                 if (!gm.state.flags.d1_radio_noise_played) {
                     gm.playSound('sfx-dynamic', 'scene/room_d/d_1g_sfx_radio_noise.wav');
                     gm.state.flags.d1_radio_noise_played = true;
-                    gm.showDialog(["?? ??? ???... ??? ????? ??? ???? ? ??."]);
+                    gm.showDialog(["라디오 신호가 잡힌다... 배전함 주파수와 관련이 있을까? 한 번 가보자."]);
                 }
             }
         },
@@ -606,13 +686,7 @@ export const gameData = {
                                     gm.playSound('sfx-dynamic', 'scene/room_a/a_1b_sfx_falling_photo_piece.wav');
                                     gm.obtainItem('item_06_photo_piece');
                                     
-                                    let diag = ["라디오 주파수를 맞췄더니 사진 조각이 떨어졌어."];
-                                    if (gm.state.inventory.includes('item_04_album')) {
-                                        diag.push("아까 앨범이 있지 않았나? 인벤토리에서 살펴보자.");
-                                    } else {
-                                        diag.push("이 사진 조각을 활용할 수 있는 무언가 있을거야. 방을 둘러보며 찾아보자.");
-                                    }
-                                    gm.showDialog(diag);
+                                    gm.loadScene('a_1b_photo_piece');
                                     return true;
                                 } else {
                                     gm.playSound('sfx-error');
@@ -746,9 +820,7 @@ export const gameData = {
                                 if(isCorrect) {
                                     gm.updateScore(10);
                                     gm.state.flags.b3b_solved = true;
-                                    gm.playSound('sfx-dynamic', 'scene/room_b/b_3b_s3_sfx_box_opened.wav');
-                                    gm.showDialog(["상자가 열렸다! 네비게이션 목적지 힌트인 것 같아."]); 
-                                    gm.loadScene('b_bg_light'); 
+                                    gm.loadScene('b_3b_s2_box_click_checked'); 
                                     return true;
                                 } else {
                                     gm.playSound('sfx-dynamic', 'scene/room_b/b_3b_s2_box_click_checked_negative.wav');
@@ -765,6 +837,42 @@ export const gameData = {
                     }
                 }
             ]
+        },
+        'a_1b_photo_piece': {
+            bg: 'scene/room_a/a_1b_photo_piece.png',
+            canGoBack: true,
+            backTarget: 'a_bg_2light',
+            onEnter: (gm) => {
+                let diag = ["라디오 주파수를 맞췄더니 사진 조각이 떨어졌어."];
+                if (gm.state.inventory.includes('item_04_album')) {
+                    diag.push("아까 앨범이 있지 않았나? 인벤토리에서 살펴보자.");
+                } else {
+                    diag.push("이 사진 조각을 활용할 수 있는 무언가 있을거야. 방을 둘러보며 찾아보자.");
+                }
+                gm.showDialog(diag);
+            }
+        },
+        'b_3b_s2_box_click_checked': {
+            bg: 'scene/room_b/b_3b_s2_box_click_checked.png',
+            canGoBack: true,
+            backTarget: 'b_bg_light',
+            hitboxes: [
+                {
+                    x: 0, y: 0, w: 100, h: 100,
+                    onClick: (gm) => {
+                        gm.playSound('sfx-dynamic', 'scene/room_b/b_3b_s3_sfx_box_opened.wav');
+                        gm.loadScene('b_3b_s3_box_opened');
+                    }
+                }
+            ]
+        },
+        'b_3b_s3_box_opened': {
+            bg: 'scene/room_b/b_3b_s3_box_opened.png',
+            canGoBack: true,
+            backTarget: 'b_bg_light',
+            onEnter: (gm) => {
+                gm.showDialog(["상자가 열렸다! 네비게이션 목적지 힌트인 것 같아."]);
+            }
         },
         'e_bg': {
             bg: 'scene/yard_e/e_bg.png',
@@ -832,7 +940,16 @@ export const gameData = {
                 {
                     x: 0, y: 0, w: 100, h: 100,
                     onClick: (gm) => {
-                        gm.showDialog(["이걸 담을 병이 없어....아마 책상 근처 선반에서 어떤 병을 본 것 같은데..."]);
+                        if (gm.state.inventory.includes('item_03_glass_bottle')) {
+                            gm.showDialog(["일단 이걸 담아보자."], () => {
+                                gm.playSound('sfx-dynamic', 'scene/yard_e/e_2b_sfx_glass_bottle_input.mp3');
+                                gm.state.flags.manure_bottle_obtained = true;
+                                gm.loadScene('e_2b_glass_bottle_input');
+                                gm.obtainItem('item_10_manure_bottle');
+                            });
+                        } else {
+                            gm.showDialog(["이걸 담을 병이 없어....아마 책상 근처 선반에서 어떤 병을 본 것 같은데..."]);
+                        }
                     }
                 }
             ]
@@ -850,7 +967,11 @@ export const gameData = {
                 {
                     x: 0, y: 0, w: 100, h: 100,
                     onClick: (gm) => {
-                        gm.showDialog(["연료가 없어...일단 다른 곳에서 연료를 획득하는게 먼저인 것 같아."]);
+                        if (gm.state.inventory.includes('item_10_manure_bottle')) {
+                            gm.showDialog(["연료(분뇨병)를 기계에 넣어보자."]);
+                        } else {
+                            gm.showDialog(["연료가 없어...일단 다른 곳에서 연료를 획득하는게 먼저인 것 같아."]);
+                        }
                     }
                 }
             ]
@@ -1012,11 +1133,14 @@ export const gameData = {
         },
         'item_02_hangerchief': (gm) => {
             if (gm.state.currentSceneId === 'd_1a_panel_dusty') {
-                gm.playVideo('scene/room_d/d_1b_video_panel_cleaning.mp4', () => {
-                    gm.loadScene('d_1c_panel_cleaned');
-                });
+                gm.loadScene('d_1b_panel_clean');
+                setTimeout(() => {
+                    gm.playVideo('scene/room_d/d_1b_video_panel_cleaning.mp4', () => {
+                        gm.loadScene('d_1c_panel_cleaned');
+                    });
+                }, 500);
             } else {
-                gm.showDialog(["??? ???? ??? ??? ?? ? ??."]);
+                gm.showDialog(["지금은 이 아이템을 사용할 상황이 아닌 것 같다."]);
             }
         },
         'item_03_glass_bottle': (gm) => {
@@ -1026,7 +1150,7 @@ export const gameData = {
                 gm.loadScene('e_2b_glass_bottle_input');
                 gm.obtainItem('item_10_manure_bottle');
             } else {
-                gm.showDialog(["??? ???? ??? ??? ?? ? ??."]);
+                gm.showDialog(["지금은 이 아이템을 사용할 상황이 아닌 것 같다."]);
             }
         },
         'item_04_album': (gm) => {
@@ -1052,10 +1176,7 @@ export const gameData = {
         'item_08_hot_water_cup': (gm) => {
             if (gm.state.currentSceneId === 'c_1b_freezer_open' && !gm.state.flags.car_key_obtained) {
                 gm.playSound('sfx-dynamic', 'scene/room_c/c_1c_sfx_melting.mp3');
-                gm.showDialog(["얼음이 녹았다! 차키를 얻었다."], () => {
-                    gm.state.flags.car_key_obtained = true;
-                    gm.obtainItem('item_09_car_key');
-                });
+                gm.loadScene('c_1c_melting');
             } else {
                 gm.showDialog(["뜨거운 물을 아무데나 부을 순 없어."]);
             }
@@ -1068,7 +1189,7 @@ export const gameData = {
                     gm.loadScene('e_3c_machine_active');
                 });
             } else {
-                gm.showDialog(["??? ? ??? ??? ??? ?? ? ??."]);
+                gm.showDialog(["지금은 이 아이템을 사용할 상황이 아닌 것 같다."]);
             }
         },
         'item_09_car_key': (gm) => {
