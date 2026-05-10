@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>세상을 바꾸는 재생에너지 방탈출</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="title-screen" class="title-screen">
+        <h1 style="font-size: 32px; margin-bottom: 10px; color: #a0a0b0; font-weight: normal;">재생에너지 방탈출</h1>
+        <h2 style="font-size: 56px; margin-top: 0; margin-bottom: 30px; color: #ffd700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">세상을 바꾸는 에너지</h2>
+        <p style="font-size: 18px; margin-bottom: 5px; color: #fff;">본인의 고유 번호(8자리 숫자)를 입력해주세요.</p>
+        <p class="title-desc">학번 4자리와 개인 비밀번호 4자리를 조합하세요.<br>(예시: 학번이 2600이고 비밀번호가 1234라면 26001234 입력)</p>
+        <input type="text" id="player-id-input" maxlength="8" placeholder="8자리 숫자 입력 (예: 26001234)" autocomplete="off">
+        <div id="title-error" class="error-text"></div>
+        <div class="title-buttons">
+            <button id="btn-new-game">새로 시작하기</button>
+            <button id="btn-continue-game">이어하기</button>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <button id="btn-nav-left" class="nav-btn left-btn" style="display:none;">‹</button>
+        <button id="btn-nav-right" class="nav-btn right-btn" style="display:none;">›</button>
+
+        <div id="game-container">
+            <img id="scene-bg" src="" alt="scene">
+            <div id="hitbox-layer"></div>
+            <video id="scene-video" style="display: none;" playsinline webkit-playsinline preload="auto"></video>
+
+            <div id="top-ui">
+                <button id="btn-menu" class="ui-btn">메뉴</button>
+                <button id="btn-inventory" class="ui-btn">인벤토리</button>
+            </div>
+
+            <button id="btn-back" class="ui-btn" style="display:none;">돌아가기</button>
+
+            <div id="dialog-box" style="display:none;">
+                <p id="dialog-text"></p>
+                <span class="dialog-next">클릭하여 계속</span>
+            </div>
+
+            <div id="modal-layer" style="display:none;">
+                <div class="modal-box">
+                    <p id="modal-desc"></p>
+                    <div id="modal-content"></div>
+                    <p id="modal-hint" style="display:none; color:#ffd700; margin-top:10px; font-size:0.9em;"></p>
+                    <div class="modal-actions">
+                        <button id="btn-modal-hint" class="action-btn" style="display:none;">힌트 보기 (-5점)</button>
+                        <button id="btn-modal-submit" class="action-btn">확인</button>
+                        <button id="btn-modal-close" class="action-btn secondary">닫기</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="inventory-layer" style="display:none;">
+                <div class="inventory-box">
+                    <h3>인벤토리</h3>
+                    <div id="inventory-grid"></div>
+                    <button id="btn-inventory-close" class="action-btn secondary">닫기</button>
+                </div>
+            </div>
+
+            <div id="menu-layer" style="display:none;">
+                <div class="menu-box">
+                    <h3>메뉴</h3>
+                    <div class="menu-actions">
+                        <button id="btn-menu-resume" class="action-btn">이어하기</button>
+                        <button id="btn-menu-home" class="action-btn secondary">처음으로</button>
+                        <button id="btn-menu-settings" class="action-btn secondary">설정</button>
+                    </div>
+                    <div id="settings-panel" style="display:none;">
+                        <label class="settings-row">
+                            <span>소리</span>
+                            <input id="sound-toggle" type="checkbox" checked>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="item-zoom-layer" style="display:none;">
+                <img id="item-zoom-img" src="" alt="zoomed item">
+                <button id="btn-item-zoom-close" class="ui-btn">돌아가기</button>
+            </div>
+        </div>
+
+        <div id="info-ui">
+            <div id="time-display">남은 시간: <span id="time-val">50:00</span></div>
+            <div id="score-display">점수: <span id="score-val">0</span></div>
+        </div>
+    </div>
+
+    <audio id="sfx-click" src="scene/global/sfx_click.wav" preload="auto"></audio>
+    <audio id="sfx-error" src="scene/global/sfx_error.mp3" preload="auto"></audio>
+    <audio id="sfx-inventory-get" src="scene/global/sfx_inventory_get.wav" preload="auto"></audio>
+    <audio id="sfx-dynamic" src=""></audio>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,884 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+body {
+    background-color: #111;
+    color: #fff;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#portrait-warning {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #000;
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+@media (orientation: portrait) {
+    #portrait-warning { display: flex; }
+    #app-container { display: none !important; }
+}
+
+#app-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding-right: clamp(128px, 18vw, 180px);
+}
+
+#game-container {
+    position: relative;
+    width: auto;
+    height: 100%;
+    aspect-ratio: 4 / 3;
+    max-width: calc(100vw - clamp(148px, 20vw, 200px));
+    max-height: 100vh;
+    background: #000;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+
+#scene-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: absolute;
+    top: 0; left: 0;
+}
+
+#scene-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: absolute;
+    top: 0; left: 0;
+    z-index: 5;
+    background: black;
+}
+
+#hitbox-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.hitbox {
+    position: absolute;
+    cursor: pointer;
+    /* border: 1px solid rgba(255,0,0,0.5); /* For debugging */
+}
+
+/* UI Buttons */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 20;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.nav-btn:hover { background: rgba(0,0,0,0.8); transform: translateY(-50%) scale(1.1); }
+.left-btn { left: 20px; }
+.right-btn { right: 20px; }
+
+#top-ui {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 20;
+    align-items: center;
+}
+
+#score-display {
+    background: rgba(0,0,0,0.7);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #ffd700;
+}
+
+#time-display {
+    background: rgba(0,0,0,0.7);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+.ui-btn {
+    background: rgba(0,0,0,0.7);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+.ui-btn:hover { background: rgba(255,255,255,0.2); }
+.highlight-glow { box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.6); animation: pulse-glow 1s infinite alternate; }
+
+@keyframes pulse-glow {
+    from { box-shadow: 0 0 10px 2px rgba(255, 215, 0, 0.4); }
+    to { box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.8); }
+}
+
+#info-ui {
+    position: absolute;
+    bottom: clamp(10px, 3vh, 20px);
+    right: clamp(10px, 2vw, 20px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    z-index: 20;
+    width: clamp(112px, 16vw, 150px);
+    pointer-events: none;
+}
+
+#info-ui #time-display,
+#info-ui #score-display {
+    width: 100%;
+    text-align: right;
+}
+
+#btn-back {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 20;
+    font-size: 16px;
+    padding: 10px 20px;
+}
+
+#dialog-box {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background: linear-gradient(transparent, rgba(0,0,0,0.9) 20%, rgba(0,0,0,1));
+    z-index: 30;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    cursor: pointer;
+}
+
+#dialog-text {
+    font-size: 20px;
+    line-height: 1.5;
+    text-shadow: 1px 1px 2px black;
+}
+
+.dialog-next {
+    font-size: 14px;
+    color: #aaa;
+    margin-top: 15px;
+    align-self: flex-end;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+#modal-layer, #inventory-layer, #item-zoom-layer, #menu-layer {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal-box, .inventory-box, .menu-box {
+    background: rgba(20,20,25,0.95);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 80%;
+    min-width: 300px;
+    max-height: 85%;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+.menu-box {
+    width: min(320px, 82%);
+}
+
+.menu-box h3 {
+    margin-bottom: 18px;
+    font-size: 20px;
+}
+
+.menu-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.menu-actions .action-btn {
+    width: 100%;
+    margin-right: 0;
+}
+
+#settings-panel {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    font-size: 15px;
+}
+
+.settings-row input {
+    width: 22px;
+    height: 22px;
+}
+
+.inventory-box {
+    width: 60%;
+    max-height: 80%;
+    display: flex;
+    flex-direction: column;
+}
+
+#inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+    overflow-y: auto;
+}
+
+.inv-item {
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    overflow: hidden;
+}
+.inv-item:hover { border-color: #fff; background: rgba(255,255,255,0.2); }
+.inv-item img { max-width: 90%; max-height: 90%; object-fit: contain; }
+
+#modal-desc {
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+#modal-content {
+    margin-bottom: 20px;
+}
+
+.action-btn {
+    background: #4a90e2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.2s;
+    margin-right: 10px;
+}
+.action-btn:hover { background: #357abd; }
+.action-btn.secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+.action-btn.secondary:hover { background: rgba(255,255,255,0.2); }
+
+#item-zoom-img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+#btn-item-zoom-close {
+    position: absolute;
+    bottom: 30px;
+}
+
+/* 퀴즈 UI 스타일 */
+.keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 200px;
+    margin: 0 auto;
+}
+.keypad-btn {
+    padding: 15px;
+    font-size: 20px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.keypad-btn:hover { background: rgba(255,255,255,0.3); }
+#keypad-display {
+    text-align: center; font-size: 24px; margin-bottom: 15px; letter-spacing: 5px; min-height: 30px;
+}
+
+.text-input {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.checkbox-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 5px;
+}
+.checkbox-item:hover { background: rgba(255,255,255,0.1); }
+.checkbox-item input { margin-top: 5px; }
+
+/* 라디오 UI */
+.radio-ui {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+.radio-dial-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.radio-val { width: 100px; text-align: center; font-size: 18px; font-weight: bold; background: #222; padding: 5px; border-radius: 5px; border: 1px inset #555; }
+.radio-btn { background: #333; border: 1px solid #666; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
+
+/* 토글 UI (지도) */
+.map-toggles {
+    position: relative;
+    width: 100%;
+    height: 300px; /* 임시 */
+    background: url('scene/room_d/d_1d_windmap_problem.png') no-repeat center center;
+    background-size: contain;
+}
+.toggle-switch {
+    position: absolute;
+    width: 40px; height: 20px;
+    background: #888;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid #555;
+}
+.toggle-switch.on { background: #4caf50; }
+.toggle-switch::after {
+    content: '';
+    position: absolute; top: 2px; left: 2px;
+    width: 12px; height: 12px; background: white; border-radius: 50%;
+    transition: 0.2s;
+}
+.toggle-switch.on::after { left: 22px; }
+
+/* 배전함 지도 스위치 위치 예시 */
+#toggle-kangwon { top: 20%; right: 20%; }
+#toggle-busan { bottom: 20%; right: 20%; }
+#toggle-jeju { bottom: 10%; left: 30%; }
+/* 기타 가짜 스위치들 생략(js에서 동적 생성) */
+
+/* 순서 입력 상자 (dropdowns) */
+.dropdown-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.dropdown-group select {
+    padding: 8px; background: #222; color: white; border: 1px solid #555; border-radius: 4px;
+}
+
+/* Title Screen */
+.title-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #1a1a2e;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.title-desc {
+    font-size: 14px;
+    color: #a0a0b0;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+#player-id-input {
+    padding: 12px;
+    font-size: 20px;
+    text-align: center;
+    width: 280px;
+    border-radius: 8px;
+    border: 2px solid #4a4e69;
+    margin-bottom: 10px;
+    background-color: #22223b;
+    color: #fff;
+    outline: none;
+}
+#player-id-input:focus {
+    border-color: #ffd700;
+}
+.error-text {
+    color: #ff6b6b;
+    font-size: 14px;
+    height: 20px;
+    margin-bottom: 15px;
+}
+.title-buttons button {
+    padding: 12px 24px;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 10px;
+    cursor: pointer;
+    background-color: #4a4e69;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    transition: background 0.3s, transform 0.1s;
+}
+.title-buttons button:hover {
+    background-color: #9a8c98;
+}
+.title-buttons button:active {
+    transform: scale(0.95);
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+    #app-container {
+        padding-right: clamp(112px, 17vw, 150px);
+    }
+
+    #game-container {
+        max-width: calc(100vw - clamp(124px, 19vw, 164px));
+        box-shadow: none;
+    }
+
+    #top-ui {
+        top: 10px;
+        right: 12px;
+        gap: 8px;
+    }
+
+    .ui-btn,
+    #score-display {
+        min-height: 34px;
+        padding: 6px 11px;
+        border-radius: 7px;
+        font-size: 12px;
+    }
+
+    #score-display {
+        border-radius: 17px;
+    }
+
+    .nav-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+        border-width: 1px;
+    }
+
+    .left-btn { left: 10px; }
+    .right-btn { right: 10px; }
+
+    #info-ui {
+        right: 8px;
+        bottom: 10px;
+        gap: 6px;
+        width: clamp(100px, 15vw, 124px);
+    }
+
+    #time-display,
+    #score-display {
+        font-size: 12px;
+        padding: 6px 11px;
+    }
+
+    #btn-back {
+        left: 12px;
+        bottom: 12px;
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+
+    #dialog-box {
+        height: 26%;
+        padding: 16px 28px 18px;
+        background: linear-gradient(transparent, rgba(0,0,0,0.82) 24%, rgba(0,0,0,0.96));
+    }
+
+    #dialog-text {
+        font-size: 16px;
+        line-height: 1.42;
+    }
+
+    .dialog-next {
+        margin-top: 8px;
+        font-size: 12px;
+    }
+
+    .modal-box,
+    .inventory-box,
+    .menu-box {
+        max-width: 88%;
+        max-height: 88%;
+        min-width: 260px;
+        padding: 18px;
+        border-radius: 8px;
+        overflow-y: auto;
+    }
+
+    #modal-desc {
+        margin-bottom: 12px;
+        font-size: 14px;
+        line-height: 1.35;
+    }
+
+    #modal-content {
+        margin-bottom: 12px;
+    }
+
+    .action-btn {
+        padding: 7px 12px;
+        border-radius: 5px;
+        font-size: 13px;
+    }
+
+    .keypad-btn {
+        padding: 8px;
+        font-size: 16px;
+    }
+
+    #keypad-display {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .keypad-grid {
+        gap: 7px;
+        max-width: 170px;
+    }
+
+    .map-toggles {
+        height: 180px;
+    }
+
+    .checkbox-item {
+        padding: 7px;
+    }
+
+    .radio-val {
+        font-size: 15px;
+        padding: 4px;
+    }
+
+    .radio-btn {
+        width: 26px;
+        height: 26px;
+    }
+
+    .dropdown-group {
+        max-height: 160px;
+    }
+
+    .menu-box h3 {
+        margin-bottom: 12px;
+        font-size: 16px;
+    }
+
+    .menu-actions {
+        gap: 8px;
+    }
+
+    #settings-panel {
+        margin-top: 12px;
+        padding-top: 10px;
+    }
+
+    .settings-row {
+        font-size: 13px;
+    }
+
+    #inventory-grid {
+        grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+        gap: 10px;
+        margin: 12px 0;
+    }
+
+    .inv-item {
+        width: 58px;
+        height: 58px;
+        border-radius: 6px;
+    }
+
+    .title-screen {
+        padding: 14px;
+    }
+
+    .title-screen h1 {
+        margin-bottom: 6px !important;
+        font-size: 20px !important;
+    }
+
+    .title-screen h2 {
+        margin-bottom: 16px !important;
+        font-size: 34px !important;
+    }
+
+    .title-screen p {
+        font-size: 13px !important;
+    }
+
+    .title-desc {
+        margin-bottom: 12px;
+        font-size: 12px !important;
+        line-height: 1.35;
+    }
+
+    #player-id-input {
+        width: 240px;
+        padding: 8px;
+        font-size: 16px;
+    }
+
+    .error-text {
+        height: 16px;
+        margin-bottom: 10px;
+        font-size: 12px;
+    }
+
+    .title-buttons button {
+        padding: 9px 16px;
+        font-size: 14px;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 520px) and (min-aspect-ratio: 3 / 2) {
+    #top-ui {
+        position: fixed;
+        top: 12px;
+        right: 10px;
+        flex-direction: column;
+        align-items: stretch;
+        width: min(120px, calc((100vw - (100vh * 4 / 3)) / 2 - 18px));
+        min-width: 84px;
+        gap: 7px;
+    }
+
+    #top-ui .ui-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    #info-ui {
+        position: fixed;
+        bottom: 12px;
+        right: 10px;
+        flex-direction: column;
+        align-items: stretch;
+        width: min(120px, calc((100vw - (100vh * 4 / 3)) / 2 - 18px));
+        min-width: 84px;
+        gap: 7px;
+    }
+
+    #info-ui > div {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 380px) {
+    #app-container {
+        padding-right: clamp(96px, 16vw, 124px);
+    }
+
+    #game-container {
+        max-width: calc(100vw - clamp(108px, 18vw, 138px));
+    }
+
+    #top-ui {
+        top: 8px;
+        right: 10px;
+        gap: 6px;
+    }
+
+    .ui-btn,
+    #score-display {
+        min-height: 30px;
+        padding: 5px 9px;
+        font-size: 11px;
+    }
+
+    #info-ui {
+        position: fixed;
+        right: 10px;
+        bottom: 8px;
+        width: clamp(88px, 14vw, 108px);
+        gap: 6px;
+    }
+
+    #time-display,
+    #score-display {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+
+    #dialog-box {
+        height: 24%;
+        padding: 12px 24px 14px;
+    }
+
+    #dialog-text {
+        font-size: 14px;
+        line-height: 1.35;
+    }
+
+    .dialog-next {
+        margin-top: 6px;
+        font-size: 11px;
+    }
+
+    .modal-box,
+    .inventory-box,
+    .menu-box {
+        max-height: 90%;
+        padding: 14px;
+        overflow-y: auto;
+    }
+
+    #modal-desc {
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    #modal-content {
+        margin-bottom: 8px;
+    }
+
+    .action-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .keypad-btn {
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .keypad-grid {
+        gap: 5px;
+        max-width: 150px;
+    }
+
+    #keypad-display {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .map-toggles {
+        height: 130px;
+    }
+
+    .checkbox-item {
+        padding: 5px;
+        font-size: 13px;
+    }
+
+    .dropdown-group {
+        max-height: 120px;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 380px) and (min-aspect-ratio: 3 / 2) {
+    #top-ui {
+        top: 8px;
+        right: 8px;
+        width: min(104px, calc((100vw - (100vh * 4 / 3)) / 2 - 14px));
+        min-width: 76px;
+        gap: 5px;
+    }
+
+    #info-ui {
+        bottom: 8px;
+        right: 8px;
+        width: min(104px, calc((100vw - (100vh * 4 / 3)) / 2 - 14px));
+        min-width: 76px;
+        gap: 5px;
+    }
+}
